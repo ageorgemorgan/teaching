@@ -1,11 +1,10 @@
-program solve_sde
+program wiener_sim
+    ! Simulates an ensemble of the Wiener process following D. Higham 2001
     use stdlib_stats_distribution_normal, only: norm => rvs_normal
  
     implicit none
-    real :: T = 1
     integer :: io, j, k, N_steps = 500, N_paths = 6
-    real :: dt
-
+    real :: dt, T = 1.0
     real, allocatable :: w(:, :), dw(:)
 
     dt = T/N_steps
@@ -13,7 +12,7 @@ program solve_sde
     allocate(dw(N_steps))
     allocate(w(N_paths, N_steps))
 
-    !$omp parallel private(k, w) shared(total_sum) num_threads(6)
+    !$omp parallel private(k, dw) shared(w) num_threads(6)
 
     !$omp do
     do k = 1, N_paths
@@ -23,7 +22,7 @@ program solve_sde
     !$omp end do 
     !$omp end parallel
 
-    ! Record the state
+    ! Record the state history
     open(newunit=io, file="wiener_sim.txt", status="replace", action="write")
 
     do j = 1, N_paths
